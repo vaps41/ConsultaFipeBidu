@@ -104,7 +104,7 @@ Object.keys(tabs).forEach(key => tabs[key].btn.addEventListener('click', () => s
 // --- Lógica Gemini API ---
 async function callGeminiApi(prompt, schema = null) {
     // A URL agora aponta para a nossa função no servidor
-    const serverUrl = '/.netlify/functions/gemini';
+    const serverUrl = '/api/gemini';
 
     try {
         const response = await fetch(serverUrl, {

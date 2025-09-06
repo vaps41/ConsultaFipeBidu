@@ -1,3 +1,4 @@
+// Conteúdo do Css.js
 tailwind.config = {
     theme: {
         extend: {
@@ -69,6 +70,12 @@ const projectionMonthlyCost = document.getElementById('projection-monthly-cost')
 const geminiAssistantLoader = document.getElementById('gemini-assistant-loader');
 const getTechSheetBtn = document.getElementById('getTechSheetBtn');
 const techSheetResult = document.getElementById('tech-sheet-result');
+
+// Sugestão
+const suggestionButton = document.getElementById('suggestionButton');
+const suggestionModal = document.getElementById('suggestionModal');
+const closeSuggestionModal = document.getElementById('closeSuggestionModal');
+const suggestionForm = document.getElementById('suggestionForm');
 
 let currentFipeValue = 0;
 let currentFipeData = null;
@@ -566,6 +573,22 @@ calculateProjectionBtn.addEventListener('click', () => {
     projectionMonthlyCost.textContent = `(Média de ${formatCurrency(totalCost / 48)} por mês)`;
     projectionResultContainer.classList.remove('hidden');
     setTimeout(() => projectionResultContainer.classList.add('visible'), 10);
+});
+
+// Modal de Sugestão
+suggestionButton.addEventListener('click', () => {
+    suggestionModal.classList.remove('hidden');
+});
+
+function closeModal() {
+    suggestionModal.classList.add('hidden');
+}
+
+closeSuggestionModal.addEventListener('click', closeModal);
+suggestionModal.addEventListener('click', (event) => {
+    if (event.target === suggestionModal) {
+        closeModal();
+    }
 });
 
 // Inicialização

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bidu Leilão - Análise Completa de Veículos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="Css.css">
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+
+            <div class="text-center mb-8">
+                <!-- Logo Inserida Aqui -->
+                <img src="Logo.BiduLeilão.SemFundo.02.png" alt="Logo Bidu Leilão" class="mx-auto h-24 w-auto mb-4">
+                <h1 class="text-3xl font-bold text-gray-800">Análise Completa de Veículos</h1>
+                <p class="text-gray-500 mt-2">FIPE, Leilão, Seguro, IPVA e Ficha Técnica com IA!</p>
+            </div>
+
+            <!-- Formulário de Seleção do Veículo -->
+            <div class="space-y-6">
+                <div>
+                    <label for="vehicleType" class="block text-sm font-medium text-gray-700 mb-1">1. Tipo de
+                        Veículo</label>
+                    <select id="vehicleType"
+                        class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition">
+                        <option value="">Selecione o tipo</option>
+                        <option value="carros">Carros</option>
+                        <option value="motos">Motos</option>
+                        <option value="caminhoes">Caminhões</option>
+                    </select>
+                </div>
+                <div id="brand-container" class="hidden">
+                    <label for="brandSearch" class="block text-sm font-medium text-gray-700 mb-1">2. Marca</label>
+                    <div class="relative">
+                        <input type="search" id="brandSearch" placeholder="Digite o nome da marca..."
+                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
+                            autocomplete="off">
+                        <div id="brandSuggestions"
+                            class="absolute z-20 w-full bg-white border border-gray-300 rounded-b-lg mt-1 hidden max-h-60 overflow-y-auto shadow-lg">
+                            <!-- Sugestões de marcas -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="brandCode">
+                </div>
+                <div id="model-container" class="hidden">
+                    <label for="modelSearch" class="block text-sm font-medium text-gray-700 mb-1">3. Modelo</label>
+                    <div class="relative">
+                        <input type="search" id="modelSearch" placeholder="Digite o nome do modelo..."
+                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
+                            autocomplete="off">
+                        <div id="modelSuggestions"
+                            class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-lg mt-1 hidden max-h-60 overflow-y-auto shadow-lg">
+                            <!-- Sugestões de modelos -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="modelCode">
+                </div>
+                <div id="year-container" class="hidden">
+                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">4. Ano</label>
+                    <select id="year"
+                        class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
+                        disabled>
+                        <option value="">Selecione o ano</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="loader" class="hidden my-6 text-center">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto">
+                </div>
+                <p class="text-gray-500 mt-2">Carregando...</p>
+            </div>
+            <div id="error" class="hidden my-6 p-4 bg-red-100 text-red-700 rounded-lg text-center"></div>
+
+            <!-- Container Principal de Resultados -->
+            <div id="results-container" class="hidden mt-8 space-y-6">
+
+                <!-- Card FIPE -->
+                <div id="result"
+                    class="bg-brand-primary-light border-2 border-dashed border-brand-primary/30 rounded-2xl p-6">
+                    <h2 id="result-title" class="text-2xl font-semibold text-gray-800 text-center"></h2>
+                    <div class="mt-6 text-center">
+                        <p class="text-lg text-gray-600">Valor FIPE</p>
+                        <p id="result-price" class="text-4xl sm:text-5xl font-bold text-brand-primary my-2"></p>
+                    </div>
+                </div>
+
+                <!-- Seção de Abas -->
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-4 md:space-x-6 overflow-x-auto" aria-label="Tabs">
+                        <button id="tab-ia"
+                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-brand-primary text-brand-primary">Ficha
+                            Técnica IA</button>
+                        <button id="tab-leilao"
+                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Análise
+                            de Leilão</button>
+                        <button id="tab-seguro"
+                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Simulador
+                            de Seguro</button>
+                        <button id="tab-ipva"
+                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Simulador
+                            de IPVA</button>
+                        <button id="tab-custos"
+                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Projeção
+                            de Custos</button>
+                    </nav>
+                </div>
+
+                <!-- Conteúdo das Abas -->
+                <div id="tab-content-ia">
+                    <div class="bg-brand-primary-light border-2 border-dashed border-brand-primary/30 rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 text-center">Ficha Técnica do Veículo com IA</h3>
+                        <p class="text-center text-gray-500 text-sm mt-2">Gere uma ficha técnica completa e detalhada do
+                            veículo.</p>
+
+                        <div class="mt-6 text-center">
+                            <button id="getTechSheetBtn"
+                                class="w-full md:w-auto bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">
+                                Gerar Ficha Técnica
+                            </button>
+                        </div>
+
+                        <div id="gemini-assistant-loader" class="hidden my-4 text-center">
+                            <div
+                                class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mx-auto">
+                            </div>
+                            <p class="text-gray-500 mt-2 text-sm">Gerando informações... Isso pode levar alguns
+                                segundos.
+                            </p>
+                        </div>
+
+                        <div id="tech-sheet-result" class="hidden mt-6 space-y-4"></div>
+                    </div>
+                </div>
+
+                <div id="tab-content-leilao" class="hidden">
+                    <div
+                        class="bg-brand-secondary-light border-2 border-dashed border-brand-secondary/50 rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 text-center">Análise para Leilão</h3>
+                        <p class="text-center text-gray-500 text-sm mt-2">Custo estimado para uma compra vantajosa (55%
+                            abaixo da FIPE).</p>
+                        <div class="mt-6 text-center">
+                            <p class="text-lg text-gray-600">Lance Máximo Sugerido</p>
+                            <p id="auction-price" class="text-3xl sm:text-4xl font-bold text-amber-600 my-2"></p>
+                            <p class="text-gray-600 mt-4">Taxa do Leiloeiro (5%)</p>
+                            <p id="auctioneer-fee" class="text-2xl font-semibold text-amber-600"></p>
+                        </div>
+                        <div class="mt-6 border-t border-brand-secondary/50 pt-4 text-center">
+                            <p class="text-lg text-gray-600">Pagamento Total Estimado</p>
+                            <p id="total-auction-cost" class="text-3xl sm:text-4xl font-bold text-green-600 my-2"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-content-seguro" class="hidden">
+                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 text-center">Simulador de Seguro</h3>
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="vehicleOrigin" class="block text-sm font-medium text-gray-700">Origem do
+                                    Veículo</label>
+                                <select id="vehicleOrigin"
+                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
+                                    <option value="outros">Outros / Normal</option>
+                                    <option value="financeira">Recuperado de financeira</option>
+                                    <option value="furto_roubo">Furto/roubo (sem danos)</option>
+                                    <option value="sinistro">Sinistro (colisão)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="driverAge" class="block text-sm font-medium text-gray-700">Idade do
+                                    Motorista</label>
+                                <input type="number" id="driverAge"
+                                    class="mt-1 w-full p-2 border border-gray-300 rounded-lg" placeholder="Ex: 30">
+                            </div>
+                            <div>
+                                <label for="location" class="block text-sm font-medium text-gray-700">Cidade</label>
+                                <select id="location"
+                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
+                                    <option value="interior">Interior</option>
+                                    <option value="capital">Capital</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="coverageType" class="block text-sm font-medium text-gray-700">Tipo de
+                                    Cobertura</label>
+                                <select id="coverageType"
+                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
+                                    <option value="compreensiva">Compreensiva</option>
+                                    <option value="terceiros">Apenas Terceiros</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <button id="calculateInsuranceBtn"
+                                    class="w-full bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">Calcular
+                                    Seguro</button>
+                            </div>
+                        </div>
+                        <div id="insurance-warning"
+                            class="hidden mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded-lg text-sm">
+                            <strong>Atenção:</strong> Algumas seguradoras podem recusar veículos com histórico de
+                            sinistro
+                            (colisão).
+                        </div>
+                        <div id="insurance-result-container" class="hidden mt-6 text-center reveal">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 sm:gap-y-0">
+                                <div>
+                                    <p class="text-lg text-gray-600">Prêmio Anual</p>
+                                    <p id="insurance-annual" class="text-3xl sm:text-4xl font-bold text-indigo-600"></p>
+                                </div>
+                                <div>
+                                    <p class="text-lg text-gray-600">Prêmio Mensal</p>
+                                    <p id="insurance-monthly" class="text-3xl sm:text-4xl font-bold text-indigo-600">
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-4 border-t border-gray-200 pt-3">
+                                <p class="text-sm font-medium text-gray-700">Fatores aplicados no cálculo:</p>
+                                <ul id="insurance-adjustments" class="text-sm text-gray-600 list-none"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-content-ipva" class="hidden">
+                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 text-center">Cálculo de IPVA Estimado</h3>
+                        <p class="text-center text-gray-500 text-sm mt-2">Selecione o estado para ver o valor aproximado
+                            do
+                            IPVA.</p>
+                        <div class="mt-4">
+                            <label for="stateSelect" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="stateSelect"
+                                class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+                                <option value="">Selecione um estado</option>
+                            </select>
+                        </div>
+                        <div id="ipva-result-container" class="hidden mt-6 text-center">
+                            <p class="text-lg text-gray-600">Valor Estimado do IPVA</p>
+                            <p id="ipva-result" class="text-3xl sm:text-4xl font-bold text-purple-600 my-2"></p>
+                            <p id="ipva-rate-info" class="text-sm text-gray-600"></p>
+                            <p class="text-xs text-gray-500 mt-2">Este valor é uma estimativa baseada na alíquota padrão
+                                para carros de passeio e pode variar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-content-custos" class="hidden">
+                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 text-center">Projeção de Custos (4 Anos)</h3>
+                        <p class="text-center text-gray-500 text-sm mt-2">Simule os gastos anuais com depreciação,
+                            seguro e
+                            IPVA.</p>
+                        <div class="mt-6 text-center">
+                            <button id="calculateProjectionBtn"
+                                class="w-full md:w-auto bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled>Calcular Projeção</button>
+                            <p id="projection-helper-text" class="text-xs text-gray-500 mt-2">Calcule o Seguro e o IPVA
+                                nas
+                                outras abas para habilitar.</p>
+                        </div>
+
+                        <div id="projection-result-container" class="hidden mt-6 reveal">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm text-left text-gray-700">
+                                    <thead class="bg-gray-100 text-xs uppercase">
+                                        <tr>
+                                            <th scope="col" class="px-4 py-3">Ano</th>
+                                            <th scope="col" class="px-4 py-3">Depreciação (10%)</th>
+                                            <th scope="col" class="px-4 py-3">Seguro</th>
+                                            <th scope="col" class="px-4 py-3">IPVA</th>
+                                            <th scope="col" class="px-4 py-3 font-bold">Custo Anual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projection-table-body"></tbody>
+                                </table>
+                            </div>
+                            <div class="mt-6 border-t-2 border-dashed border-gray-200 pt-4 text-center">
+                                <p class="text-lg text-gray-600">Custo Total em 4 Anos</p>
+                                <p id="projection-total-cost" class="text-3xl sm:text-4xl font-bold text-teal-600 my-1">
+                                </p>
+                                <p id="projection-monthly-cost" class="text-md text-gray-600">(Média de R$ 0,00 por mês)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button id="resetButton"
+                    class="bg-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-800 transition">
+                    Fazer Nova Consulta
+                </button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <iframe src="https://vaps41.github.io/assinatura/"
+            style="width:100%; height:70px; border:0; overflow:hidden; background:transparent;" scrolling="no"
+            title="Rodapé"></iframe>
+    </footer>
+    <script src="Js.js"></script>
+</body>
+
+</html>

@@ -13,10 +13,14 @@
     <link rel="icon" type="image/png" href="./favicon/favicon-32x32.png" sizes="32x32" />
     <link rel="shortcut icon" href="./favicon/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="BIDU FIPE" />
     <link rel="manifest" href="./favicon/site.webmanifest" />
     <link rel="stylesheet" href="Css.css">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Meta Tags para "Adicionar ao Ecrã de Início" (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#005AAD">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bidu Leilão">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D8RF9YQ8"></script>
     <script>
@@ -38,7 +42,6 @@
                 <h1 class="text-3xl font-bold text-gray-800">Análise Completa de Veículos</h1>
                 <p class="text-gray-500 mt-2">FIPE, Leilão, Seguro, IPVA e Ficha Técnica com IA!</p>
             </div>
-
             <!-- Formulário de Seleção do Veículo -->
             <div class="space-y-6">
                 <div>
@@ -320,8 +323,42 @@
                     Fazer Nova Consulta
                 </button>
             </div>
+            <!-- NOVA SECÇÃO: Adicionar ao Ecrã de Início -->
+            <div class="mt-10 text-center">
+                <div class="bg-gray-50 rounded-2xl p-6 border-2 border-dashed">
+                    <h3 class="text-xl font-bold text-gray-800">Leve o Bidu Leilão com Você!</h3>
+                    <p class="text-gray-500 mt-2 text-sm">Adicione um atalho na sua Tela inicial para um acesso mais
+                        rápido!
+                    </p>
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left text-xs text-gray-600">
+                        <div class="bg-white p-3 rounded-lg border">
+                            <p class="font-semibold flex items-center"><img
+                                    src="https://img.icons8.com/color/48/android-os.png" alt="Android Icon"
+                                    class="w-4 h-4 mr-2"> Android (Chrome)</p>
+                            <p class="mt-1">Toque nos três pontinhos (⋮) e depois em <span
+                                    class="font-semibold">"Instalar
+                                    aplicativo"</span> ou <span class="font-semibold">"Adicionar na Tela
+                                    inicial"</span>.
+                            </p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border">
+                            <p class="font-semibold flex items-center"><img
+                                    src="https://img.icons8.com/ios-filled/50/mac-os.png" alt="Apple Icon"
+                                    class="w-4 h-4 mr-2"> iOS (Safari)</p>
+                            <p class="mt-1">Toque no ícone de Compartilhar ( <img
+                                    src="https://img.icons8.com/sf-regular/48/share.png" alt="Share Icon"
+                                    class="inline-block align-middle h-4 w-4"> ) e depois em <span
+                                    class="font-semibold">"Adicionar na Tela inicial"</span>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
+
+        </div>
+        </div>
+        </div>
     </main>
     <!-- Modal de Sugestão -->
     <div id="suggestionModal"

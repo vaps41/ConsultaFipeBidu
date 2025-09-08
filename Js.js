@@ -265,20 +265,52 @@ function renderTechSheet(data) {
 
                 const dd = document.createElement('dd');
                 dd.className = 'text-base text-gray-900 mb-2';
-                dd.textContent = value;
-
+                
                 list.appendChild(dt);
                 list.appendChild(dd);
 
                 if (key === 'medida') {
-                    const pneuMedidaSemEspaco = value.replace(/\s/g, '');
-                    const pneuLink = document.createElement('a');
-                    pneuLink.href = `https://www.pneustore.com.br/search/?text=${encodeURIComponent(pneuMedidaSemEspaco)}`;
-                    pneuLink.target = '_blank';
-                    pneuLink.rel = 'noopener noreferrer';
-                    pneuLink.className = 'inline-flex items-center text-xs font-medium text-brand-primary hover:underline mt-1';
-                    pneuLink.innerHTML = `Ver pneus recomendados <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
-                    dd.appendChild(pneuLink);
+                    if (vehicleTypeSelect.value === 'motos' && value.toLowerCase().includes('dianteiro') && value.toLowerCase().includes('traseiro')) {
+                        const frontMatch = value.match(/Dianteiro:?\s*([0-9\/.-R]+)/i);
+                        const rearMatch = value.match(/Traseiro:?\s*([0-9\/.-R]+)/i);
+
+                        const frontTire = frontMatch ? frontMatch[1].trim() : null;
+                        const rearTire = rearMatch ? rearMatch[1].trim() : null;
+                        
+                        dd.textContent = value; // Mostra o texto original
+
+                        if (frontTire) {
+                            const pneuLink = document.createElement('a');
+                            pneuLink.href = `https://www.pneustore.com.br/search/?text=${encodeURIComponent(frontTire.replace(/\s/g, ''))}&utm_source=bidu&utm_medium=influencer&utm_campaign=cupom_bidu`;
+                            pneuLink.target = '_blank';
+                            pneuLink.rel = 'noopener noreferrer';
+                            pneuLink.className = 'block items-center text-xs font-medium text-brand-primary hover:underline mt-1';
+                            pneuLink.innerHTML = `Ver pneu dianteiro (${frontTire}) <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline ml-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+                            dd.appendChild(pneuLink);
+                        }
+                        if (rearTire) {
+                             const pneuLink = document.createElement('a');
+                            pneuLink.href = `https://www.pneustore.com.br/search/?text=${encodeURIComponent(rearTire.replace(/\s/g, ''))}&utm_source=bidu&utm_medium=influencer&utm_campaign=cupom_bidu`;
+                            pneuLink.target = '_blank';
+                            pneuLink.rel = 'noopener noreferrer';
+                            pneuLink.className = 'block items-center text-xs font-medium text-brand-primary hover:underline mt-1';
+                            pneuLink.innerHTML = `Ver pneu traseiro (${rearTire}) <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline ml-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+                            dd.appendChild(pneuLink);
+                        }
+
+                    } else {
+                        dd.textContent = value;
+                        const pneuMedidaSemEspaco = value.replace(/\s/g, '');
+                        const pneuLink = document.createElement('a');
+                        pneuLink.href = `https://www.pneustore.com.br/search/?text=${encodeURIComponent(pneuMedidaSemEspaco)}&utm_source=bidu&utm_medium=influencer&utm_campaign=cupom_bidu`;
+                        pneuLink.target = '_blank';
+                        pneuLink.rel = 'noopener noreferrer';
+                        pneuLink.className = 'inline-flex items-center text-xs font-medium text-brand-primary hover:underline mt-1';
+                        pneuLink.innerHTML = `Ver pneus recomendados <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+                        dd.appendChild(pneuLink);
+                    }
+                } else {
+                     dd.textContent = value;
                 }
             }
         }

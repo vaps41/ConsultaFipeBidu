@@ -1,421 +1,347 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bidu Leilão - Análise Completa de Veículos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Validação de Acesso Acessor de leilão</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="./favicon/favicon.ico" type="image/x-icon">
     <link rel="icon" type="image/png" href="./favicon/favicon-32x32.png" sizes="32x32" />
     <link rel="shortcut icon" href="./favicon/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png" />
     <link rel="manifest" href="./favicon/site.webmanifest" />
-    <link rel="stylesheet" href="Css.css">
+    <!-- <link rel="stylesheet" href="Css.css"> -->
     <!-- Meta Tags para "Adicionar ao Ecrã de Início" (PWA) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#005AAD">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bidu Leilão">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D8RF9YQ8"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+    <style>
+        :root {
+            --azul-bidu: #0A3A80;
+            --dourado-bidu: #F2B705;
+            --fundo-dark: #111827;
+            --fundo-card: #1F2937;
+            --texto-claro: #F3F4F6;
+            --cinza-claro: #9CA3AF;
+        }
 
-        gtag('config', 'G-E5D8RF9YQ8');
-    </script>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--fundo-dark);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            color: var(--texto-claro);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px; /* Ajustado para um formulário de login */
+        }
+
+        .validation-card {
+            background-color: var(--fundo-card);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #374151;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header svg {
+            color: var(--dourado-bidu);
+            height: 48px;
+            width: 48px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .header p {
+            color: var(--cinza-claro);
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: var(--cinza-claro);
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 14px;
+            box-sizing: border-box;
+            background-color: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 8px;
+            color: var(--texto-claro);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="email"]:focus {
+            outline: none;
+            border-color: var(--dourado-bidu);
+            box-shadow: 0 0 0 3px rgba(242, 183, 5, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--dourado-bidu);
+            color: #111827;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(242, 183, 5, 0.5);
+        }
+        
+        button:disabled {
+            background-color: #a18329;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+            height: 20px;
+            width: 20px;
+            margin-left: 10px;
+            border: 3px solid rgba(17, 24, 39, 0.3);
+            border-top-color: #111827;
+            border-radius: 50%;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #messageArea {
+            min-height: 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .success-message {
+            color: #34D399; /* Verde para sucesso */
+        }
+
+        .error-message {
+            color: #EF4444; /* Vermelho para erro */
+        }
+
+        .separator-container {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 30px 0 20px 0;
+            color: var(--cinza-claro);
+        }
+
+        .separator-container .line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #374151;
+        }
+
+        .separator-container .separator-text {
+            flex-shrink: 0;
+            padding: 0 15px;
+            font-size: 0.9em;
+        }
+
+        .secondary-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            background: transparent;
+            color: var(--dourado-bidu);
+            border: 2px solid var(--dourado-bidu);
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .secondary-button:hover {
+            background-color: var(--dourado-bidu);
+            color: #111827;
+            box-shadow: 0 0 15px rgba(242, 183, 5, 0.5);
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100 flex flex-col min-h-screen">
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
-
-            <div class="text-center mb-8">
-                <!-- Logo Inserida Aqui -->
-                <img src="Logo.BiduLeilão.SemFundo.02.png" alt="Logo Bidu Leilão" class="mx-auto h-24 w-auto mb-4">
-                <h1 class="text-3xl font-bold text-gray-800">Análise Completa de Veículos</h1>
-                <p class="text-gray-500 mt-2">FIPE, Leilão, Seguro, IPVA e Ficha Técnica com IA!</p>
-            </div>
-            <!-- Formulário de Seleção do Veículo -->
-            <div class="space-y-6">
-                <div>
-                    <label for="vehicleType" class="block text-sm font-medium text-gray-700 mb-1">1. Tipo de
-                        Veículo</label>
-                    <select id="vehicleType"
-                        class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition">
-                        <option value="">Selecione o tipo</option>
-                        <option value="carros">Carros</option>
-                        <option value="motos">Motos</option>
-                        <option value="caminhoes">Caminhões</option>
-                    </select>
-                </div>
-                <div id="brand-container" class="hidden">
-                    <label for="brandSearch" class="block text-sm font-medium text-gray-700 mb-1">2. Marca</label>
-                    <div class="relative">
-                        <input type="search" id="brandSearch" placeholder="Digite o nome da marca..."
-                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
-                            autocomplete="off">
-                        <div id="brandSuggestions"
-                            class="absolute z-20 w-full bg-white border border-gray-300 rounded-b-lg mt-1 hidden max-h-60 overflow-y-auto shadow-lg">
-                            <!-- Sugestões de marcas -->
-                        </div>
-                    </div>
-                    <input type="hidden" id="brandCode">
-                </div>
-                <div id="model-container" class="hidden">
-                    <label for="modelSearch" class="block text-sm font-medium text-gray-700 mb-1">3. Modelo</label>
-                    <div class="relative">
-                        <input type="search" id="modelSearch" placeholder="Digite o nome do modelo..."
-                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
-                            autocomplete="off">
-                        <div id="modelSuggestions"
-                            class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-lg mt-1 hidden max-h-60 overflow-y-auto shadow-lg">
-                            <!-- Sugestões de modelos -->
-                        </div>
-                    </div>
-                    <input type="hidden" id="modelCode">
-                </div>
-                <div id="year-container" class="hidden">
-                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">4. Ano</label>
-                    <select id="year"
-                        class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition"
-                        disabled>
-                        <option value="">Selecione o ano</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="loader" class="hidden my-6 text-center">
-                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto">
-                </div>
-                <p class="text-gray-500 mt-2">Carregando...</p>
-            </div>
-            <div id="error" class="hidden my-6 p-4 bg-red-100 text-red-700 rounded-lg text-center"></div>
-
-            <!-- Container Principal de Resultados -->
-            <div id="results-container" class="hidden mt-8 space-y-6">
-
-                <!-- Card FIPE -->
-                <div id="result"
-                    class="bg-brand-primary-light border-2 border-dashed border-brand-primary/30 rounded-2xl p-6">
-                    <h2 id="result-title" class="text-2xl font-semibold text-gray-800 text-center"></h2>
-                    <div class="mt-6 text-center">
-                        <p class="text-lg text-gray-600">Valor FIPE</p>
-                        <p id="result-price" class="text-4xl sm:text-5xl font-bold text-brand-primary my-2"></p>
-                    </div>
-                </div>
-
-                <!-- Seção de Abas -->
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-4 md:space-x-6 overflow-x-auto" aria-label="Tabs">
-                        <button id="tab-ia"
-                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-brand-primary text-brand-primary">Ficha
-                            Técnica IA</button>
-                        <button id="tab-leilao"
-                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Análise
-                            de Leilão</button>
-                        <button id="tab-seguro"
-                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Simulador
-                            de Seguro</button>
-                        <button id="tab-ipva"
-                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Simulador
-                            de IPVA</button>
-                        <button id="tab-custos"
-                            class="flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Projeção
-                            de Custos</button>
-                    </nav>
-                </div>
-
-                <!-- Conteúdo das Abas -->
-                <div id="tab-content-ia">
-                    <div class="bg-brand-primary-light border-2 border-dashed border-brand-primary/30 rounded-2xl p-6">
-                        <h3 class="text-xl font-semibold text-gray-800 text-center">Ficha Técnica do Veículo com IA</h3>
-                        <p class="text-center text-gray-500 text-sm mt-2">Gere uma ficha técnica completa e detalhada do
-                            veículo.</p>
-
-                        <div class="mt-6 text-center">
-                            <button id="getTechSheetBtn"
-                                class="w-full md:w-auto bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">
-                                Gerar Ficha Técnica
-                            </button>
-                        </div>
-
-                        <div id="gemini-assistant-loader" class="hidden my-4 text-center">
-                            <div
-                                class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mx-auto">
-                            </div>
-                            <p class="text-gray-500 mt-2 text-sm">Gerando informações... Isso pode levar alguns
-                                segundos.
-                            </p>
-                        </div>
-
-                        <div id="tech-sheet-result" class="hidden mt-6 space-y-4"></div>
-                    </div>
-                </div>
-
-                <div id="tab-content-leilao" class="hidden">
-                    <div
-                        class="bg-brand-secondary-light border-2 border-dashed border-brand-secondary/50 rounded-2xl p-6">
-                        <h3 class="text-xl font-semibold text-gray-800 text-center">Análise para Leilão</h3>
-                        <p class="text-center text-gray-500 text-sm mt-2">Custo estimado para uma compra vantajosa (55%
-                            abaixo da FIPE).</p>
-                        <div class="mt-6 text-center">
-                            <p class="text-lg text-gray-600">Lance Máximo Sugerido</p>
-                            <p id="auction-price" class="text-3xl sm:text-4xl font-bold text-amber-600 my-2"></p>
-                            <p class="text-gray-600 mt-4">Taxa do Leiloeiro (5%)</p>
-                            <p id="auctioneer-fee" class="text-2xl font-semibold text-amber-600"></p>
-                        </div>
-                        <div class="mt-6 border-t border-brand-secondary/50 pt-4 text-center">
-                            <p class="text-lg text-gray-600">Pagamento Total Estimado</p>
-                            <p id="total-auction-cost" class="text-3xl sm:text-4xl font-bold text-green-600 my-2"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-content-seguro" class="hidden">
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
-                        <h3 class="text-xl font-semibold text-gray-800 text-center">Simulador de Seguro</h3>
-                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="vehicleOrigin" class="block text-sm font-medium text-gray-700">Origem do
-                                    Veículo</label>
-                                <select id="vehicleOrigin"
-                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
-                                    <option value="outros">Outros / Normal</option>
-                                    <option value="financeira">Recuperado de financeira</option>
-                                    <option value="furto_roubo">Furto/roubo (sem danos)</option>
-                                    <option value="sinistro">Sinistro (colisão)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="driverAge" class="block text-sm font-medium text-gray-700">Idade do
-                                    Motorista</label>
-                                <input type="number" id="driverAge"
-                                    class="mt-1 w-full p-2 border border-gray-300 rounded-lg" placeholder="Ex: 30">
-                            </div>
-                            <div>
-                                <label for="location" class="block text-sm font-medium text-gray-700">Cidade</label>
-                                <select id="location"
-                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
-                                    <option value="interior">Interior</option>
-                                    <option value="capital">Capital</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="coverageType" class="block text-sm font-medium text-gray-700">Tipo de
-                                    Cobertura</label>
-                                <select id="coverageType"
-                                    class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
-                                    <option value="compreensiva">Compreensiva</option>
-                                    <option value="terceiros">Apenas Terceiros</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <button id="calculateInsuranceBtn"
-                                    class="w-full bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">Calcular
-                                    Seguro</button>
-                            </div>
-                        </div>
-                        <div id="insurance-warning"
-                            class="hidden mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded-lg text-sm">
-                            <strong>Atenção:</strong> Algumas seguradoras podem recusar veículos com histórico de
-                            sinistro
-                            (colisão).
-                        </div>
-                        <div id="insurance-result-container" class="hidden mt-6 text-center reveal">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 sm:gap-y-0">
-                                <div>
-                                    <p class="text-lg text-gray-600">Prêmio Anual</p>
-                                    <p id="insurance-annual" class="text-3xl sm:text-4xl font-bold text-indigo-600"></p>
-                                </div>
-                                <div>
-                                    <p class="text-lg text-gray-600">Prêmio Mensal</p>
-                                    <p id="insurance-monthly" class="text-3xl sm:text-4xl font-bold text-indigo-600">
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="mt-4 border-t border-gray-200 pt-3">
-                                <p class="text-sm font-medium text-gray-700">Fatores aplicados no cálculo:</p>
-                                <ul id="insurance-adjustments" class="text-sm text-gray-600 list-none"></ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-content-ipva" class="hidden">
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
-                        <h3 class="text-xl font-semibold text-gray-800 text-center">Cálculo de IPVA Estimado</h3>
-                        <p class="text-center text-gray-500 text-sm mt-2">Selecione o estado para ver o valor aproximado
-                            do
-                            IPVA.</p>
-                        <div class="mt-4">
-                            <label for="stateSelect" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                            <select id="stateSelect"
-                                class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
-                                <option value="">Selecione um estado</option>
-                            </select>
-                        </div>
-                        <div id="ipva-result-container" class="hidden mt-6 text-center">
-                            <p class="text-lg text-gray-600">Valor Estimado do IPVA</p>
-                            <p id="ipva-result" class="text-3xl sm:text-4xl font-bold text-purple-600 my-2"></p>
-                            <p id="ipva-rate-info" class="text-sm text-gray-600"></p>
-                            <p class="text-xs text-gray-500 mt-2">Este valor é uma estimativa baseada na alíquota padrão
-                                para carros de passeio e pode variar.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-content-custos" class="hidden">
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6">
-                        <h3 class="text-xl font-semibold text-gray-800 text-center">Projeção de Custos (4 Anos)</h3>
-                        <p class="text-center text-gray-500 text-sm mt-2">Simule os gastos anuais com depreciação,
-                            seguro e
-                            IPVA.</p>
-                        <div class="mt-6 text-center">
-                            <button id="calculateProjectionBtn"
-                                class="w-full md:w-auto bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                disabled>Calcular Projeção</button>
-                            <p id="projection-helper-text" class="text-xs text-gray-500 mt-2">Calcule o Seguro e o IPVA
-                                nas
-                                outras abas para habilitar.</p>
-                        </div>
-
-                        <div id="projection-result-container" class="hidden mt-6 reveal">
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm text-left text-gray-700">
-                                    <thead class="bg-gray-100 text-xs uppercase">
-                                        <tr>
-                                            <th scope="col" class="px-4 py-3">Ano</th>
-                                            <th scope="col" class="px-4 py-3">Depreciação (10%)</th>
-                                            <th scope="col" class="px-4 py-3">Seguro</th>
-                                            <th scope="col" class="px-4 py-3">IPVA</th>
-                                            <th scope="col" class="px-4 py-3 font-bold">Custo Anual</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="projection-table-body"></tbody>
-                                </table>
-                            </div>
-                            <div class="mt-6 border-t-2 border-dashed border-gray-200 pt-4 text-center">
-                                <p class="text-lg text-gray-600">Custo Total em 4 Anos</p>
-                                <p id="projection-total-cost" class="text-3xl sm:text-4xl font-bold text-teal-600 my-1">
-                                </p>
-                                <p id="projection-monthly-cost" class="text-md text-gray-600">(Média de R$ 0,00 por mês)
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <button id="suggestionButton"
-                    class="w-full sm:w-auto bg-brand-secondary text-black font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">
-                    Fazer Sugestão
-                </button>
-                <button id="resetButton"
-                    class="w-full sm:w-auto bg-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-800 transition">
-                    Fazer Nova Consulta
-                </button>
-            </div>
-            <!-- NOVA SECÇÃO: Adicionar ao Ecrã de Início -->
-            <div class="mt-10 text-center">
-                <div class="bg-gray-50 rounded-2xl p-6 border-2 border-dashed">
-                    <h3 class="text-xl font-bold text-gray-800">Leve o Bidu Leilão com Você!</h3>
-                    <p class="text-gray-500 mt-2 text-sm">Adicione um atalho na sua Tela inicial para um acesso mais
-                        rápido!
-                    </p>
-                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left text-xs text-gray-600">
-                        <div class="bg-white p-3 rounded-lg border">
-                            <p class="font-semibold flex items-center"><img
-                                    src="https://img.icons8.com/color/48/android-os.png" alt="Android Icon"
-                                    class="w-4 h-4 mr-2"> Android (Chrome)</p>
-                            <p class="mt-1">Toque nos três pontinhos (⋮) e depois em <span
-                                    class="font-semibold">"Instalar
-                                    aplicativo"</span> ou <span class="font-semibold">"Adicionar na Tela
-                                    inicial"</span>.
-                            </p>
-                        </div>
-                        <div class="bg-white p-3 rounded-lg border">
-                            <p class="font-semibold flex items-center"><img
-                                    src="https://img.icons8.com/ios-filled/50/mac-os.png" alt="Apple Icon"
-                                    class="w-4 h-4 mr-2"> iOS (Safari)</p>
-                            <p class="mt-1">Toque no ícone de Compartilhar ( <img
-                                    src="https://img.icons8.com/sf-regular/48/share.png" alt="Share Icon"
-                                    class="inline-block align-middle h-4 w-4"> ) e depois em <span
-                                    class="font-semibold">"Adicionar na Tela inicial"</span>.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        </div>
-        </div>
-        </div>
-    </main>
-    <!-- Modal de Sugestão -->
-    <div id="suggestionModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div id="suggestionModalContent" class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md relative">
-            <button id="closeSuggestionModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
+    <div class="container">
+        <div class="validation-card">
+            
+            <div class="header">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
                 </svg>
-            </button>
-
-            <div id="suggestionFormContainer">
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Envie a sua Sugestão</h3>
-                <p class="text-gray-500 mb-6">Ajude-nos a melhorar esta ferramenta!</p>
-                <form id="suggestionForm" action="https://formsubmit.co/vaps41.dev@gmail.com" method="POST">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="suggesterName" class="block text-sm font-medium text-gray-700">Nome</label>
-                            <input type="text" id="suggesterName" name="name" required
-                                class="mt-1 w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary">
-                        </div>
-                        <div>
-                            <label for="suggesterContact" class="block text-sm font-medium text-gray-700">Contacto
-                                (Opcional)</label>
-                            <input type="text" id="suggesterContact" name="contact" placeholder="Email ou telefone"
-                                class="mt-1 w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary">
-                        </div>
-                        <div>
-                            <label for="suggestionText" class="block text-sm font-medium text-gray-700">Sugestão</label>
-                            <textarea id="suggestionText" name="suggestion" required rows="4"
-                                class="mt-1 w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary"></textarea>
-                        </div>
-                    </div>
-                    <!-- Configurações do FormSubmit -->
-                    <input type="hidden" name="_template" value="table">
-                    <input type="hidden" name="_subject" value="Nova Sugestão - Bidu Leilão App">
-                    <input type="hidden" name="_captcha" value="false">
-                    <input type="hidden" name="_next" value="https://consulta-fipe-ass-a-ibidu.vercel.app/">
-
-                    <div class="mt-6">
-                        <button type="submit" id="submitSuggestionBtn"
-                            class="w-full bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition">
-                            Enviar Sugestão
-                        </button>
-                    </div>
-                </form>
+                <h1>Validação de Acesso</h1>
+                <p>Digite o e-mail que você utilizou na compra.</p>
             </div>
+
+            <form id="validationForm">
+                <div class="form-group">
+                    <label for="email">Seu e-mail de compra</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com">
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" id="submitButton">
+                        <span id="buttonText">Verificar Acesso</span>
+                        <div id="loadingSpinner" class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
+
+            <div id="messageArea">
+                <!-- Mensagens de sucesso ou erro aparecerão aqui -->
+            </div>
+
+            <!-- Área de Checkout (oculta por padrão) -->
+            <div id="checkoutArea" class="hidden">
+                <div class="separator-container">
+                    <div class="line"></div>
+                    <span class="separator-text">OU</span>
+                    <div class="line"></div>
+                </div>
+                <a href="https://bidu.hotmart.host/lista-de-leiloes-biduleilao-47e646d9-3c57-4be7-903a-dc5c93954277" class="secondary-button" target="_blank">
+                    Adquirir o produto
+                </a>
+            </div>
+
         </div>
     </div>
-    <footer>
-        <iframe src="https://vaps41.github.io/assinatura/"
-            style="width:100%; height:70px; border:0; overflow:hidden; background:transparent;" scrolling="no"
-            title="Rodapé"></iframe>
-    </footer>
-    <script src="Js.js"></script>
-</body>
 
+    <script>
+        const validationForm = document.getElementById('validationForm');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const messageArea = document.getElementById('messageArea');
+        const emailInput = document.getElementById('email');
+        const checkoutArea = document.getElementById('checkoutArea');
+
+        validationForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const userEmail = emailInput.value.trim().toLowerCase();
+            
+            messageArea.textContent = '';
+            messageArea.className = '';
+            checkoutArea.classList.add('hidden');
+
+            if (!userEmail) {
+                displayMessage('Por favor, digite um e-mail válido.', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            // CORREÇÃO: Usar a URL completa da sua API na Vercel.
+            const apiEndpoint = 'https://bidu-acessordleilao.vercel.app/api/validar-email';
+
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: userEmail }),
+                });
+
+                if (response.ok) {
+                    displayMessage('Acesso liberado! Redirecionando...', 'success');
+                    
+                    sessionStorage.setItem('accessGranted', 'true');
+                    sessionStorage.setItem('userEmail', userEmail);
+
+                    setTimeout(() => {
+                        window.location.href = 'https://bidu-acessordleilao.vercel.app/Acessor.html';
+                    }, 2000);
+                } else {
+                    displayMessage('Acesso negado. Verifique o e-mail ou contate o suporte.', 'error');
+                    checkoutArea.classList.remove('hidden');
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Erro ao conectar com o servidor:', error);
+                displayMessage('Ocorreu um erro na validação. Tente novamente mais tarde.', 'error');
+                checkoutArea.classList.remove('hidden');
+                setLoading(false);
+            }
+        });
+        
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                buttonText.textContent = 'Verificando...';
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                buttonText.textContent = 'Verificar Acesso';
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function displayMessage(text, type) {
+            messageArea.textContent = text;
+            if (type === 'success') {
+                messageArea.className = 'success-message';
+            } else {
+                messageArea.className = 'error-message';
+            }
+        }
+    </script>
+</body>
 </html>
+

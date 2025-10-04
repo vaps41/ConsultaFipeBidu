@@ -296,7 +296,7 @@
                 }
                 
                 const data = await response.json();
-                const hasPurchasedMap = data.produtos?.some(p => p.nome === "Mapa de leilões");
+                const hasPurchasedMap = data.produtos?.some(p => p.nome === "Assessor do Leilão");
 
                 if (data.comprou === true && hasPurchasedMap) {
                     // SUCESSO PRIMÁRIO: Acesso liberado.
@@ -379,4 +379,5 @@
     </script>
 </body>
 </html>
+
 

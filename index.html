@@ -7,14 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="./favicon/favicon.ico" type="image/x-icon">
     <link rel="icon" type="image/png" href="./favicon/favicon-32x32.png" sizes="32x32" />
     <link rel="shortcut icon" href="./favicon/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png" />
     <link rel="manifest" href="./favicon/site.webmanifest" />
-    <!-- <link rel="stylesheet" href="Css.css"> -->
-    <!-- Meta Tags para "Adicionar ao Ecrã de Início" (PWA) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#005AAD">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -45,7 +42,7 @@
 
         .container {
             width: 100%;
-            max-width: 450px; /* Ajustado para um formulário de login */
+            max-width: 450px;
         }
 
         .validation-card {
@@ -166,11 +163,11 @@
         }
 
         .success-message {
-            color: #34D399; /* Verde para sucesso */
+            color: #34D399;
         }
 
         .error-message {
-            color: #EF4444; /* Vermelho para erro */
+            color: #EF4444;
         }
 
         .separator-container {
@@ -216,14 +213,6 @@
             box-shadow: 0 0 15px rgba(242, 183, 5, 0.5);
         }
     </style>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D8RF9YQ8"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-E5D8RF9YQ8');
-    </script>
 </head>
 <body>
 
@@ -256,14 +245,13 @@
                 <!-- Mensagens de sucesso ou erro aparecerão aqui -->
             </div>
 
-            <!-- Área de Checkout (oculta por padrão) -->
             <div id="checkoutArea" class="hidden">
                 <div class="separator-container">
                     <div class="line"></div>
                     <span class="separator-text">OU</span>
                     <div class="line"></div>
                 </div>
-                <a href="https://bidu.hotmart.host/lista-de-leiloes-biduleilao-47e646d9-3c57-4be7-903a-dc5c93954277" class="secondary-button" target="_blank">
+                <a href="https://produtos.biduleilao.com/" class="secondary-button" target="_blank">
                     Adquirir o produto
                 </a>
             </div>
@@ -295,39 +283,78 @@
 
             setLoading(true);
 
-            // CORREÇÃO: Usar a URL completa da sua API na Vercel.
-            const apiEndpoint = 'https://bidu-acessordleilao.vercel.app/api/validar-email';
+            // --- 1. TENTATIVA COM O MÉTODO PRIMÁRIO (WORDPRESS) ---
+            const primaryApiUrl = `https://produtos.biduleilao.com/wp-json/loja/v1/verificar-email?email=${encodeURIComponent(userEmail)}`;
 
             try {
-                const response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: userEmail }),
-                });
+                const response = await fetch(primaryApiUrl);
 
-                if (response.ok) {
-                    displayMessage('Acesso liberado! Redirecionando...', 'success');
-                    
-                    sessionStorage.setItem('accessGranted', 'true');
-                    sessionStorage.setItem('userEmail', userEmail);
-
-                    setTimeout(() => {
-                        window.location.href = 'https://bidu-acessordleilao.vercel.app/Acessor.html';
-                    }, 2000);
-                } else {
-                    displayMessage('Acesso negado. Verifique o e-mail ou contate o suporte.', 'error');
-                    checkoutArea.classList.remove('hidden');
-                    setLoading(false);
+                if (!response.ok) {
+                    // Se a resposta NÃO for OK (ex: erro 500, 404), o servidor primário falhou.
+                    // Lançamos um erro para pular para o bloco catch, que acionará o backup.
+                    throw new Error('Servidor primário respondeu com erro.');
                 }
+                
+                const data = await response.json();
+                const hasPurchasedMap = data.produtos?.some(p => p.nome === "Mapa de leilões");
+
+                if (data.comprou === true && hasPurchasedMap) {
+                    // SUCESSO PRIMÁRIO: Acesso liberado.
+                    grantAccessAndRedirect(userEmail);
+                } else {
+                    // SUCESSO PRIMÁRIO (com negação): A API funcionou e negou o acesso. Fim da verificação.
+                    let errorMessage = 'Acesso negado. Verifique se o e-mail está correto.';
+                    if (data.comprou === true && !hasPurchasedMap) {
+                        errorMessage = 'A compra foi encontrada, mas o acesso é para outro produto.';
+                    }
+                    denyAccess(errorMessage);
+                }
+
             } catch (error) {
-                console.error('Erro ao conectar com o servidor:', error);
-                displayMessage('Ocorreu um erro na validação. Tente novamente mais tarde.', 'error');
-                checkoutArea.classList.remove('hidden');
-                setLoading(false);
+                console.warn('Método primário falhou:', error.message, 'Iniciando método de backup.');
+
+                // --- 2. TENTATIVA COM O MÉTODO DE BACKUP (VERCEL/HOTMART) ---
+                const backupApiUrl = 'https://bidu-acessordleilao.vercel.app/api/validar-email';
+
+                try {
+                    const backupResponse = await fetch(backupApiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail }),
+                    });
+
+                    if (backupResponse.ok) {
+                        // SUCESSO NO BACKUP: Acesso liberado.
+                        grantAccessAndRedirect(userEmail);
+                    } else {
+                        // FALHA NO BACKUP: A API de backup funcionou e negou o acesso.
+                        const backupData = await backupResponse.json();
+                        denyAccess(backupData.message || 'Acesso negado pelo sistema de backup.');
+                    }
+                } catch (backupError) {
+                    // FALHA GERAL: Os dois sistemas falharam.
+                    console.error('Método de backup também falhou:', backupError);
+                    denyAccess('Ocorreu um erro na validação. Tente novamente mais tarde.');
+                }
             }
         });
+
+        // --- Funções Auxiliares para organizar o código ---
+
+        function grantAccessAndRedirect(userEmail) {
+            displayMessage('Acesso liberado! Redirecionando...', 'success');
+            sessionStorage.setItem('accessGranted', 'true');
+            sessionStorage.setItem('userEmail', userEmail);
+            setTimeout(() => {
+                window.location.href = 'https://bidu-acessordleilao.vercel.app/Acessor.html';
+            }, 2000);
+        }
+
+        function denyAccess(message) {
+            displayMessage(message, 'error');
+            checkoutArea.classList.remove('hidden');
+            setLoading(false);
+        }
         
         function setLoading(isLoading) {
             if (isLoading) {
@@ -352,7 +379,4 @@
     </script>
 </body>
 </html>
-
-
-
 

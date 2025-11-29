@@ -16,7 +16,7 @@ export default async function handler(request, response) {
       return response.status(500).json({ error: 'Chave de API do Gemini não configurada no servidor.' });
   }
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-09-2025:generateContent?key=${apiKey}`;
 
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -53,5 +53,6 @@ export default async function handler(request, response) {
     response.status(500).json({ error: error.message });
   }
 }
+
 
 

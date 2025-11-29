@@ -270,6 +270,8 @@
 
         validationForm.addEventListener('submit', async function(event) {
             event.preventDefault();
+            
+            // Limpa espaços e converte para minúsculo para evitar erro de digitação
             const userEmail = emailInput.value.trim().toLowerCase();
             
             messageArea.textContent = '';
@@ -283,70 +285,45 @@
 
             setLoading(true);
 
-            // --- 1. TENTATIVA COM O MÉTODO PRIMÁRIO (WORDPRESS) ---
-            const primaryApiUrl = `https://produtos.biduleilao.com/wp-json/loja/v1/verificar-email?email=${encodeURIComponent(userEmail)}`;
+            // --- TENTATIVA ÚNICA: API DIRETA (VERCEL -> HOTMART) ---
+            // Removemos a parte do WordPress que estava atrapalhando
+            const apiUrl = '/api/validar-email'; 
 
             try {
-                const response = await fetch(primaryApiUrl);
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail }),
+                });
 
-                if (!response.ok) {
-                    // Se a resposta NÃO for OK (ex: erro 500, 404), o servidor primário falhou.
-                    // Lançamos um erro para pular para o bloco catch, que acionará o backup.
-                    throw new Error('Servidor primário respondeu com erro.');
-                }
-                
-                const data = await response.json();
-                const hasPurchasedMap = data.produtos?.some(p => p.nome === "Assessor do Leilão");
-
-                if (data.comprou === true && hasPurchasedMap) {
-                    // SUCESSO PRIMÁRIO: Acesso liberado.
+                if (response.ok) {
+                    // SUCESSO: A API confirmou a compra na Hotmart
                     grantAccessAndRedirect(userEmail);
                 } else {
-                    // SUCESSO PRIMÁRIO (com negação): A API funcionou e negou o acesso. Fim da verificação.
-                    let errorMessage = 'Acesso negado. Verifique se o e-mail está correto.';
-                    if (data.comprou === true && !hasPurchasedMap) {
-                        errorMessage = 'A compra foi encontrada, mas o acesso é para outro produto.';
+                    // FALHA: A Hotmart não encontrou compra ativa para este e-mail
+                    const data = await response.json();
+                    
+                    // Mensagem amigável se for 403 (Negado) ou erro de servidor
+                    let msg = 'Acesso não encontrado. Verifique se o e-mail está igual ao da compra.';
+                    if (data && data.message) {
+                        msg = data.message;
                     }
-                    denyAccess(errorMessage);
+                    denyAccess(msg);
                 }
-
             } catch (error) {
-                console.warn('Método primário falhou:', error.message, 'Iniciando método de backup.');
-
-                // --- 2. TENTATIVA COM O MÉTODO DE BACKUP (VERCEL/HOTMART) ---
-                const backupApiUrl = 'https://bidu-acessordleilao.vercel.app/api/validar-email';
-
-                try {
-                    const backupResponse = await fetch(backupApiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: userEmail }),
-                    });
-
-                    if (backupResponse.ok) {
-                        // SUCESSO NO BACKUP: Acesso liberado.
-                        grantAccessAndRedirect(userEmail);
-                    } else {
-                        // FALHA NO BACKUP: A API de backup funcionou e negou o acesso.
-                        const backupData = await backupResponse.json();
-                        denyAccess(backupData.message || 'Acesso negado pelo sistema de backup.');
-                    }
-                } catch (backupError) {
-                    // FALHA GERAL: Os dois sistemas falharam.
-                    console.error('Método de backup também falhou:', backupError);
-                    denyAccess('Ocorreu um erro na validação. Tente novamente mais tarde.');
-                }
+                console.error('Erro de conexão:', error);
+                denyAccess('Erro ao conectar com o servidor. Tente novamente.');
             }
         });
 
-        // --- Funções Auxiliares para organizar o código ---
+        // --- Funções Auxiliares ---
 
         function grantAccessAndRedirect(userEmail) {
             displayMessage('Acesso liberado! Redirecionando...', 'success');
             sessionStorage.setItem('accessGranted', 'true');
             sessionStorage.setItem('userEmail', userEmail);
             setTimeout(() => {
-                window.location.href = 'https://bidu-acessordleilao.vercel.app/Acessor.html';
+                window.location.href = 'Acessor.html'; // Removido domínio fixo para evitar erros
             }, 2000);
         }
 
@@ -379,6 +356,7 @@
     </script>
 </body>
 </html>
+
 
 
 

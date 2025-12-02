@@ -523,7 +523,7 @@ function resetFormPartials() {
 }
 
 function calculateAuctionValues(fipeValue) {
-    const maxBid = fipeValue * 0.45;
+    const maxBid = fipeValue * 0.65;
     const fee = maxBid * 0.05;
     const totalCost = maxBid + fee;
     document.getElementById('auction-price').textContent = formatCurrency(maxBid);
@@ -625,3 +625,4 @@ suggestionModal.addEventListener('click', (event) => {
 
 // Inicialização
 populateStates();
+

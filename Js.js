@@ -12,6 +12,7 @@ tailwind.config = {
     }
 }
 
+
 const API_BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
 
 // Elementos do DOM
@@ -30,6 +31,44 @@ const resultsContainer = document.getElementById('results-container');
 const loader = document.getElementById('loader');
 const errorDiv = document.getElementById('error');
 const resetButton = document.getElementById('resetButton');
+
+let countdownInterval = null; // Variável de controle do timer
+
+function startTechSheetCountdown() {
+    const btn = document.getElementById('getTechSheetBtn');
+    let timeLeft = 60; // ALTERADO PARA 60 SEGUNDOS
+
+    // Bloqueia o botão e muda o visual
+    btn.disabled = true;
+    btn.textContent = `Aguarde ${timeLeft}s para gerar`;
+    
+    // Remove estilos de ativo e adiciona de inativo (cinza)
+    btn.classList.remove('bg-brand-primary', 'hover:bg-opacity-90');
+    btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+
+    // Limpa qualquer contagem anterior para não encavalar
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    // Inicia a contagem regressiva
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+            btn.textContent = `Aguarde ${timeLeft}s para gerar`;
+        } else {
+            // Tempo acabou: Libera o botão
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            
+            btn.disabled = false;
+            btn.textContent = 'Gerar Ficha Técnica';
+            
+            // Restaura o estilo original (azul)
+            btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
+        }
+    }, 1000);
+}
+
 
 // Abas
 const tabs = {
@@ -384,6 +423,26 @@ function populateSuggestions(container, dataList, onSelectCallback) {
 }
 
 function resetForm() {
+    // ... (código existente de limpar inputs) ...
+    
+    // ADICIONE ISSO NO FINAL
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    
+    const btn = document.getElementById('getTechSheetBtn');
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = 'Gerar Ficha Técnica';
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
+    }
+    
+    // ... (resto do código existente) ...
+}
+
+function resetForm() {
     hideResults();
     clearError();
     vehicleTypeSelect.value = '';
@@ -505,6 +564,45 @@ function displayResult(data) {
     resetFormPartials();
     resultsContainer.classList.remove('hidden');
     switchTab('ia');
+}
+
+function displayResult(data) {
+    // ... (seu código existente: preenche título, preço, etc.) ...
+    currentFipeData = data;
+    document.getElementById('result-title').textContent = `${data.Marca} ${data.Modelo}`;
+    document.getElementById('result-price').textContent = data.Valor;
+    currentFipeValue = parseCurrency(data.Valor);
+    calculateAuctionValues(currentFipeValue);
+    resetFormPartials();
+    resultsContainer.classList.remove('hidden');
+    switchTab('ia');
+
+    // ADICIONE AQUI: Inicia o bloqueio de 60s
+    startTechSheetCountdown(); 
+}
+function resetFormPartials() {
+    // ... (código existente) ...
+    stateSelect.value = '';
+    ipvaResultContainer.classList.add('hidden');
+    // ...
+    
+    // ADICIONE ISSO PARA PARAR O TIMER SE MUDAR DE CARRO
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    
+    // Restaura o botão visualmente
+    const btn = document.getElementById('getTechSheetBtn');
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = 'Gerar Ficha Técnica';
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
+    }
+
+    annualInsuranceCost = 0;
+    annualIpvaCost = 0;
 }
 
 function resetFormPartials() {

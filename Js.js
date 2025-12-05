@@ -12,7 +12,6 @@ tailwind.config = {
     }
 }
 
-
 const API_BASE_URL = 'https://parallelum.com.br/fipe/api/v1';
 
 // Elementos do DOM
@@ -32,16 +31,19 @@ const loader = document.getElementById('loader');
 const errorDiv = document.getElementById('error');
 const resetButton = document.getElementById('resetButton');
 
+// --- LÓGICA DO TIMER (Novo) ---
 let countdownInterval = null; // Variável de controle do timer
 
 function startTechSheetCountdown() {
     const btn = document.getElementById('getTechSheetBtn');
-    let timeLeft = 60; // ALTERADO PARA 60 SEGUNDOS
+    if (!btn) return;
+
+    let timeLeft = 60; // 60 SEGUNDOS
 
     // Bloqueia o botão e muda o visual
     btn.disabled = true;
     btn.textContent = `Aguarde ${timeLeft}s para gerar`;
-    
+
     // Remove estilos de ativo e adiciona de inativo (cinza)
     btn.classList.remove('bg-brand-primary', 'hover:bg-opacity-90');
     btn.classList.add('bg-gray-400', 'cursor-not-allowed');
@@ -58,17 +60,17 @@ function startTechSheetCountdown() {
             // Tempo acabou: Libera o botão
             clearInterval(countdownInterval);
             countdownInterval = null;
-            
+
             btn.disabled = false;
             btn.textContent = 'Gerar Ficha Técnica';
-            
+
             // Restaura o estilo original (azul)
             btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
             btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
         }
     }, 1000);
 }
-
+// -----------------------------
 
 // Abas
 const tabs = {
@@ -149,14 +151,12 @@ Object.keys(tabs).forEach(key => tabs[key].btn.addEventListener('click', () => s
 
 // --- Lógica Gemini API ---
 async function callGeminiApi(prompt, schema = null) {
-    // A URL agora aponta para a nossa função no servidor
     const serverUrl = '/api/gemini';
-
     try {
         const response = await fetch(serverUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, schema }) // Enviamos o prompt e o schema para o nosso servidor
+            body: JSON.stringify({ prompt, schema })
         });
 
         if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
@@ -240,7 +240,6 @@ const techSheetSchema = {
 
 function renderTechSheet(data) {
     techSheetResult.innerHTML = '';
-
     const keyToLabel = {
         'tipo': 'Tipo',
         'cilindrada_cm3': 'Cilindrada (cm³)',
@@ -304,20 +303,18 @@ function renderTechSheet(data) {
 
                 const dd = document.createElement('dd');
                 dd.className = 'text-base text-gray-900 mb-2';
-                
+
                 list.appendChild(dt);
                 list.appendChild(dd);
 
                 if (key === 'medida') {
                     if (vehicleTypeSelect.value === 'motos' && value.toLowerCase().includes('dianteiro') && value.toLowerCase().includes('traseiro')) {
+                        // Lógica Pneus Moto
                         const frontMatch = value.match(/Dianteiro:?\s*([0-9\/.-R]+)/i);
                         const rearMatch = value.match(/Traseiro:?\s*([0-9\/.-R]+)/i);
-
                         const frontTire = frontMatch ? frontMatch[1].trim() : null;
                         const rearTire = rearMatch ? rearMatch[1].trim() : null;
-                        
-                        dd.textContent = value; // Mostra o texto original
-
+                        dd.textContent = value;
                         if (frontTire) {
                             const pneuLink = document.createElement('a');
                             pneuLink.href = `https://www.pneustore.com.br/search/?text=${encodeURIComponent(frontTire.replace(/\s/g, ''))}&utm_source=bidu&utm_medium=influencer&utm_campaign=cupom_bidu`;
@@ -336,8 +333,8 @@ function renderTechSheet(data) {
                             pneuLink.innerHTML = `Ver pneu traseiro (${rearTire}) <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline ml-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
                             dd.appendChild(pneuLink);
                         }
-
                     } else {
+                        // Lógica Pneus Carro
                         dd.textContent = value;
                         const pneuMedidaSemEspaco = value.replace(/\s/g, '');
                         const pneuLink = document.createElement('a');
@@ -379,7 +376,8 @@ getTechSheetBtn.addEventListener('click', async () => {
 
     geminiAssistantLoader.classList.add('hidden');
     techSheetResult.classList.remove('hidden');
-    getTechSheetBtn.disabled = false;
+    // Obs: O botão é reabilitado via timer na função startTechSheetCountdown() chamada no displayResult
+    // Mas caso a API falhe rápido, podemos liberar? Melhor deixar o timer controlar para evitar spam.
 });
 
 // --- Lógica Principal ---
@@ -422,26 +420,7 @@ function populateSuggestions(container, dataList, onSelectCallback) {
     container.classList.remove('hidden');
 }
 
-function resetForm() {
-    // ... (código existente de limpar inputs) ...
-    
-    // ADICIONE ISSO NO FINAL
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
-    
-    const btn = document.getElementById('getTechSheetBtn');
-    if(btn) {
-        btn.disabled = false;
-        btn.textContent = 'Gerar Ficha Técnica';
-        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
-    }
-    
-    // ... (resto do código existente) ...
-}
-
+// --- FUNÇÃO RESET UNIFICADA ---
 function resetForm() {
     hideResults();
     clearError();
@@ -468,8 +447,20 @@ function resetForm() {
 
     techSheetResult.classList.add('hidden');
     techSheetResult.innerHTML = '';
-    getTechSheetBtn.disabled = false;
 
+    // --- RESET DO TIMER (Lógica Unificada) ---
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    const btn = document.getElementById('getTechSheetBtn');
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = 'Gerar Ficha Técnica';
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
+    }
+    // ----------------------------------------
     annualInsuranceCost = 0;
     annualIpvaCost = 0;
     selectedIpvaRate = 0;
@@ -555,6 +546,8 @@ document.addEventListener('click', (event) => {
     if (!modelContainer.contains(event.target)) modelSuggestions.classList.add('hidden');
 });
 
+// --- FUNÇÃO DISPLAY RESULT UNIFICADA ---
+
 function displayResult(data) {
     currentFipeData = data;
     document.getElementById('result-title').textContent = `${data.Marca} ${data.Modelo}`;
@@ -564,46 +557,13 @@ function displayResult(data) {
     resetFormPartials();
     resultsContainer.classList.remove('hidden');
     switchTab('ia');
-}
 
-function displayResult(data) {
-    // ... (seu código existente: preenche título, preço, etc.) ...
-    currentFipeData = data;
-    document.getElementById('result-title').textContent = `${data.Marca} ${data.Modelo}`;
-    document.getElementById('result-price').textContent = data.Valor;
-    currentFipeValue = parseCurrency(data.Valor);
-    calculateAuctionValues(currentFipeValue);
-    resetFormPartials();
-    resultsContainer.classList.remove('hidden');
-    switchTab('ia');
-
-    // ADICIONE AQUI: Inicia o bloqueio de 60s
+    // INICIA O BLOQUEIO DE 60s
     startTechSheetCountdown(); 
 }
-function resetFormPartials() {
-    // ... (código existente) ...
-    stateSelect.value = '';
-    ipvaResultContainer.classList.add('hidden');
-    // ...
-    
-    // ADICIONE ISSO PARA PARAR O TIMER SE MUDAR DE CARRO
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
-    
-    // Restaura o botão visualmente
-    const btn = document.getElementById('getTechSheetBtn');
-    if(btn) {
-        btn.disabled = false;
-        btn.textContent = 'Gerar Ficha Técnica';
-        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
-    }
+// --------------------------------------
 
-    annualInsuranceCost = 0;
-    annualIpvaCost = 0;
-}
+// --- FUNÇÃO RESET PARTIAL UNIFICADA ---
 
 function resetFormPartials() {
     stateSelect.value = '';
@@ -615,7 +575,21 @@ function resetFormPartials() {
     projectionHelperText.classList.remove('hidden');
     techSheetResult.classList.add('hidden');
     techSheetResult.innerHTML = '';
-    getTechSheetBtn.disabled = false;
+    
+    // --- PARAR O TIMER SE MUDAR DE CARRO ---
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    const btn = document.getElementById('getTechSheetBtn');
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = 'Gerar Ficha Técnica';
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
+    }
+    //--------------------------------------
+
     annualInsuranceCost = 0;
     annualIpvaCost = 0;
 }
@@ -672,7 +646,6 @@ stateSelect.addEventListener('change', () => {
         checkProjectionButtonState();
     }
 });
-
 // Projeção
 function checkProjectionButtonState() {
     if (annualInsuranceCost > 0 && annualIpvaCost > 0) {
@@ -696,7 +669,7 @@ calculateProjectionBtn.addEventListener('click', () => {
         const yearlyCost = depreciationValue + insuranceValue + ipvaValue;
         totalCost += yearlyCost;
         const row = `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 font-medium">${i}</td><td class="px-4 py-3">${formatCurrency(depreciationValue)}</td><td class="px-4 py-3">${formatCurrency(insuranceValue)}</td><td class="px-4 py-3">${formatCurrency(ipvaValue)}</td><td class="px-4 py-3 font-bold">${formatCurrency(yearlyCost)}</td></tr>`;
-        projectionTableBody.innerHTML += row;
+projectionTableBody.innerHTML += row;
         vehicleValue -= depreciationValue;
     }
     projectionTotalCost.textContent = formatCurrency(totalCost);
@@ -723,4 +696,3 @@ suggestionModal.addEventListener('click', (event) => {
 
 // Inicialização
 populateStates();
-

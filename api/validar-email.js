@@ -1,5 +1,5 @@
 // api/validar-email.js
-// Integração Hotmart + Vercel (PRODUÇÃO) - Funcionando
+// Integração Hotmart + Vercel (PRODUÇÃO) - Com suporte a 2 Produtos
 
 const HOTMART_AUTH_URL = 'https://api-sec-vlc.hotmart.com/security/oauth/token';
 const HOTMART_SALES_URL = 'https://developers.hotmart.com/payments/api/v1/sales/history';
@@ -7,7 +7,7 @@ const HOTMART_SALES_URL = 'https://developers.hotmart.com/payments/api/v1/sales/
 export default async function handler(request, response) {
     // --- CORS ---
     response.setHeader('Access-Control-Allow-Credentials', true);
-    response.setHeader('Access-Control-Allow-Origin', '*'); // Alterar para domínio real em produção
+    response.setHeader('Access-Control-Allow-Origin', '*'); 
     response.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
     response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (request.method === 'OPTIONS') return response.status(204).end();
@@ -20,21 +20,32 @@ export default async function handler(request, response) {
         const { email } = request.body;
         if (!email) return response.status(400).json({ message: 'E-mail é obrigatório' });
 
-        const { HOTMART_CLIENT_ID, HOTMART_CLIENT_SECRET, HOTMART_PRODUCT_ID } = process.env;
+        // 1. Pegamos também o ID do segundo produto (opcional)
+        const { HOTMART_CLIENT_ID, HOTMART_CLIENT_SECRET, HOTMART_PRODUCT_ID, HOTMART_PRODUCT_ID_2 } = process.env;
+        
+        // O primeiro produto continua sendo obrigatório para o sistema rodar
         if (!HOTMART_CLIENT_ID || !HOTMART_CLIENT_SECRET || !HOTMART_PRODUCT_ID) {
-            console.error("❌ Variáveis de ambiente não configuradas corretamente.");
+            console.error("❌ Variáveis de ambiente não configuradas (ID, Secret ou Produto 1).");
             return response.status(500).json({ message: 'Erro de configuração do servidor.' });
         }
 
         const token = await getHotmartToken(HOTMART_CLIENT_ID, HOTMART_CLIENT_SECRET);
         if (!token) return response.status(500).json({ message: 'Falha ao autenticar com Hotmart.' });
 
-        const hasAccess = await checkUserPurchase(token, email, HOTMART_PRODUCT_ID);
+        // 2. Verifica o PRIMEIRO produto
+        let hasAccess = await checkUserPurchase(token, email, HOTMART_PRODUCT_ID);
+        
+        // 3. LÓGICA NOVA: Se não tem acesso ao primeiro E existe um segundo produto configurado
+        if (!hasAccess && HOTMART_PRODUCT_ID_2) {
+            console.log(`⚠️ Sem acesso ao Produto 1. Verificando Produto 2 (${HOTMART_PRODUCT_ID_2})...`);
+            hasAccess = await checkUserPurchase(token, email, HOTMART_PRODUCT_ID_2);
+        }
+
         if (hasAccess) {
             console.log(`✅ Acesso concedido a ${email}`);
             return response.status(200).json({ message: 'Acesso liberado' });
         } else {
-            console.log(`🚫 Acesso negado a ${email}`);
+            console.log(`🚫 Acesso negado a ${email} (Verificado em ambos os produtos)`);
             return response.status(403).json({ message: 'Nenhuma compra ativa encontrada para este e-mail.' });
         }
 
@@ -43,6 +54,8 @@ export default async function handler(request, response) {
         return response.status(500).json({ message: 'Erro inesperado no servidor.' });
     }
 }
+
+// --- Funções Auxiliares (Mantidas iguais, sem alteração necessária) ---
 
 async function getHotmartToken(clientId, clientSecret) {
     try {

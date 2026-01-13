@@ -65,7 +65,7 @@ function startTechSheetCountdown() {
             btn.textContent = 'Gerar Ficha Técnica';
 
             // Restaura o estilo original (azul)
-            btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btn.classList.remove('bg-brand-primary', 'hover:bg-opacity-90');
             btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
         }
     }, 1000);
@@ -448,7 +448,7 @@ function resetForm() {
     stateSelect.value = '';
 
     projectionResultContainer.classList.add('hidden', 'visible');
-calculateProjectionBtn.disabled = true;
+    calculateProjectionBtn.disabled = true;
     projectionHelperText.classList.remove('hidden');
 
     techSheetResult.classList.add('hidden');
@@ -467,7 +467,7 @@ calculateProjectionBtn.disabled = true;
         btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
     }
     // ----------------------------------------
-annualInsuranceCost = 0;
+    annualInsuranceCost = 0;
     annualIpvaCost = 0;
     selectedIpvaRate = 0;
     currentFipeData = null;
@@ -489,7 +489,7 @@ vehicleTypeSelect.addEventListener('change', async () => {
 
     if (vehicleTypeSelect.value) {
         const brands = await fetchData(`${API_BASE_URL}/${vehicleTypeSelect.value}/marcas`);
-if (brands) {
+        if (brands) {
             allBrands = brands;
             brandContainer.classList.remove('hidden');
             brandSearchInput.focus();
@@ -506,7 +506,7 @@ brandSearchInput.addEventListener('input', () => {
         brandSearchInput.value = selectedBrand.nome;
         brandCodeInput.value = selectedBrand.codigo;
         modelContainer.classList.remove('hidden');
-yearContainer.classList.add('hidden');
+        yearContainer.classList.add('hidden');
         modelSearchInput.value = '';
         allModels = [];
         const data = await fetchData(`${API_BASE_URL}/${vehicleTypeSelect.value}/marcas/${selectedBrand.codigo}/modelos`);
@@ -524,7 +524,7 @@ modelSearchInput.addEventListener('input', () => {
         modelSearchInput.value = selectedModel.nome;
         modelCodeInput.value = selectedModel.codigo;
         yearContainer.classList.remove('hidden');
-yearSelect.innerHTML = '<option value="">Carregando anos...</option>';
+        yearSelect.innerHTML = '<option value="">Carregando anos...</option>';
         const years = await fetchData(`${API_BASE_URL}/${vehicleTypeSelect.value}/marcas/${brandCodeInput.value}/modelos/${selectedModel.codigo}/anos`);
         if (years) {
             yearSelect.innerHTML = '<option value="">Selecione o ano</option>';
@@ -586,7 +586,7 @@ function resetFormPartials() {
     if(btn) {
         btn.disabled = false;
         btn.textContent = 'Gerar Ficha Técnica';
-btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
         btn.classList.add('bg-brand-primary', 'hover:bg-opacity-90');
     }
     // --------------------------------------
@@ -631,6 +631,40 @@ vehicleOriginSelect.addEventListener('change', () => { insuranceWarning.classLis
 function populateStates() { for (const state in ipvaRates) { const option = document.createElement('option'); option.value = state; option.textContent = state; stateSelect.appendChild(option); } }
 stateSelect.addEventListener('change', () => {
     const selectedState = stateSelect.value;
+    
+    // --- LÓGICA DE ISENÇÃO IPVA (Regra 2026: > 19 anos) ---
+    // Se temos os dados da FIPE carregados e um estado selecionado
+    if (selectedState && currentFipeData) {
+        const currentYear = new Date().getFullYear();
+        let vehicleYear = currentFipeData.AnoModelo;
+
+        // FIPE retorna 32000 para veículos Zero KM. Tratamos como ano atual.
+        if (vehicleYear === 32000) {
+            vehicleYear = currentYear;
+        }
+
+        const vehicleAge = currentYear - vehicleYear;
+
+        // Se o carro tem 20 anos ou mais (mais de 19)
+        if (vehicleAge >= 20) {
+            annualIpvaCost = 0;
+            selectedIpvaRate = 0;
+            
+            // Exibir como isento
+            ipvaResult.textContent = 'Isento (R$ 0,00)';
+            
+            // --- INSERÇÃO DO LINK DA LEI ---
+            ipvaRateInfo.innerHTML = `Veículo com ${vehicleAge} anos. Isento de IPVA (Regra 2026: 20 anos ou mais de fabricação). <span class="block mt-1 text-xs text-gray-600">Conforme informações detalhadas sobre a legislação em São Paulo, você pode consultar a <a href="https://www.al.sp.gov.br/repositorio/legislacao/lei/2008/lei-13296-23.12.2008.html" target="_blank" class="text-brand-primary underline hover:text-brand-secondary">Lei nº 13.296/2008</a>.</span>`;
+            // -------------------------------
+            
+            ipvaResultContainer.classList.remove('hidden');
+            
+            checkProjectionButtonState();
+            return; // Pula o cálculo padrão de alíquota
+        }
+    }
+    // -----------------------------------------------------
+
     if (selectedState && currentFipeValue > 0) {
         const rate = ipvaRates[selectedState];
         const ipvaValue = currentFipeValue * (rate / 100);
@@ -642,14 +676,19 @@ stateSelect.addEventListener('change', () => {
         checkProjectionButtonState();
     } else {
         ipvaResultContainer.classList.add('hidden');
-annualIpvaCost = 0;
+        annualIpvaCost = 0;
         checkProjectionButtonState();
     }
 });
 
 // Projeção
 function checkProjectionButtonState() {
-    if (annualInsuranceCost > 0 && annualIpvaCost > 0) {
+    // Verifica se as seções de resultado estão visíveis em vez de verificar apenas valor > 0
+    // Isso permite que valores "0" (Isento) sejam válidos para a projeção.
+    const isInsuranceCalculated = !insuranceResultContainer.classList.contains('hidden');
+    const isIpvaCalculated = !ipvaResultContainer.classList.contains('hidden');
+
+    if (isInsuranceCalculated && isIpvaCalculated) {
         calculateProjectionBtn.disabled = false;
         projectionHelperText.classList.add('hidden');
     } else {
@@ -662,7 +701,7 @@ calculateProjectionBtn.addEventListener('click', () => {
     const insuranceRate = annualInsuranceCost / currentFipeValue;
     const ipvaRatePercent = selectedIpvaRate / 100;
     let totalCost = 0;
-projectionTableBody.innerHTML = '';
+    projectionTableBody.innerHTML = '';
     for (let i = 1; i <= 4; i++) {
         const depreciationValue = vehicleValue * 0.10;
         const insuranceValue = vehicleValue * insuranceRate;
@@ -673,7 +712,7 @@ projectionTableBody.innerHTML = '';
         projectionTableBody.innerHTML += row;
         vehicleValue -= depreciationValue;
     }
-projectionTotalCost.textContent = formatCurrency(totalCost);
+    projectionTotalCost.textContent = formatCurrency(totalCost);
     projectionMonthlyCost.textContent = `(Média de ${formatCurrency(totalCost / 48)} por mês)`;
     projectionResultContainer.classList.remove('hidden');
     setTimeout(() => projectionResultContainer.classList.add('visible'), 10);

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -245,15 +246,19 @@
                 <!-- Mensagens de sucesso ou erro aparecerão aqui -->
             </div>
 
+            <!-- Área que alterna entre botão de compra (erro) ou botão de acesso (sucesso) -->
             <div id="checkoutArea" class="hidden">
                 <div class="separator-container">
                     <div class="line"></div>
                     <span class="separator-text">OU</span>
                     <div class="line"></div>
                 </div>
-                <a href="https://pay.hotmart.com/Q102677702I" class="secondary-button" target="_blank">
-                    Adquirir o produto
-                </a>
+                
+                <div id="manualLinkArea">
+                    <a href="https://pay.hotmart.com/Q102677702I" class="secondary-button" target="_blank">
+                        Adquirir o produto
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -267,12 +272,12 @@
         const messageArea = document.getElementById('messageArea');
         const emailInput = document.getElementById('email');
         const checkoutArea = document.getElementById('checkoutArea');
+        const manualLinkArea = document.getElementById('manualLinkArea');
 
         validationForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             
-            // Limpa espaços e converte para minúsculo para evitar erro de digitação
-            const userEmail = emailInput.value.trim();
+            const userEmail = emailInput.value.trim().toLowerCase();
             
             messageArea.textContent = '';
             messageArea.className = '';
@@ -285,8 +290,7 @@
 
             setLoading(true);
 
-            // --- TENTATIVA ÚNICA: API DIRETA (VERCEL -> HOTMART) ---
-            // Removemos a parte do WordPress que estava atrapalhando
+            // Caminho da API
             const apiUrl = '/api/validar-email'; 
 
             try {
@@ -297,17 +301,12 @@
                 });
 
                 if (response.ok) {
-                    // SUCESSO: A API confirmou a compra na Hotmart
+                    // SUCESSO: A API retornou 200 OK
                     grantAccessAndRedirect(userEmail);
                 } else {
-                    // FALHA: A Hotmart não encontrou compra ativa para este e-mail
+                    // ERRO: A API retornou 403 ou 500
                     const data = await response.json();
-                    
-                    // Mensagem amigável se for 403 (Negado) ou erro de servidor
-                    let msg = 'Acesso não encontrado. Verifique se o e-mail está igual ao da compra.';
-                    if (data && data.message) {
-                        msg = data.message;
-                    }
+                    let msg = data && data.message ? data.message : 'Acesso não encontrado.';
                     denyAccess(msg);
                 }
             } catch (error) {
@@ -316,20 +315,40 @@
             }
         });
 
-        // --- Funções Auxiliares ---
-
+        // --- LÓGICA DE REDIRECIONAMENTO CORRIGIDA ---
         function grantAccessAndRedirect(userEmail) {
             displayMessage('Acesso liberado! Redirecionando...', 'success');
             sessionStorage.setItem('accessGranted', 'true');
             sessionStorage.setItem('userEmail', userEmail);
+            
+            // Defina aqui o nome exato do seu arquivo de mapa
+            const targetPage = 'Acessor.html';
+            
+            // 1. Prepara link de emergência (caso o redirect automático falhe)
+            checkoutArea.classList.remove('hidden');
+            manualLinkArea.innerHTML = `
+                <p style="color: #9CA3AF; margin-bottom: 10px;">Se você não for redirecionado automaticamente:</p>
+                <a href="${targetPage}" class="secondary-button" style="border-color: #34D399; color: #34D399;">
+                    Acessar Assessor Agora
+                </a>
+            `;
+
+            // 2. Tenta redirecionar automaticamente após 1.5s
             setTimeout(() => {
-                window.location.href = 'Acessor.html'; // Removido domínio fixo para evitar erros
-            }, 2000);
+                console.log(`Tentando ir para: ${targetPage}`);
+                window.location.href = targetPage;
+            }, 1500);
         }
 
         function denyAccess(message) {
             displayMessage(message, 'error');
             checkoutArea.classList.remove('hidden');
+            // Restaura o botão de compra se deu erro
+            manualLinkArea.innerHTML = `
+                <a href="https://pay.hotmart.com/Q102677702I" class="secondary-button" target="_blank">
+                    Adquirir o produto
+                </a>
+            `;
             setLoading(false);
         }
         
@@ -356,10 +375,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-

@@ -32,6 +32,7 @@
     </script>
 </head>
 <script>
+    /*
     // Este script deve ser a primeira coisa no body.
     const isVerified = sessionStorage.getItem('accessGranted');
 
@@ -41,6 +42,7 @@
         // Mude para a URL da sua página de validação
         window.location.href = 'https://bidu-acessordleilao.vercel.app/';
     }
+    */
 </script>
 
 <body class="bg-gray-100 flex flex-col min-h-screen">
@@ -214,8 +216,8 @@
                                 <label for="location" class="block text-sm font-medium text-gray-700">Cidade</label>
                                 <select id="location"
                                     class="mt-1 w-full p-2 bg-white border border-gray-300 rounded-lg">
-                                    <option value="interior">Interior</option>
                                     <option value="capital">Capital</option>
+                                    <option value="interior">Interior</option>
                                 </select>
                             </div>
                             <div>
@@ -429,7 +431,4 @@
     <script src="Js.js"></script>
 </body>
 
-
 </html>
-
-
